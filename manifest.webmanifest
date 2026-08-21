@@ -1,0 +1,15 @@
+{
+  "name": "AI Goal Console",
+  "short_name": "Goal Console",
+  "description": "Personal five-year goal tracker — AI implementation consulting, $4k/mo by Aug 2031.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef1f5",
+  "theme_color": "#22303f",
+  "orientation": "any",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

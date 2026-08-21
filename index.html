@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#22303f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>AI Goal Console — $4k/mo by Aug 2031</title>
+<style>
+:root{
+  --ink:#12181f;
+  --paper:#ffffff;
+  --ground:#eef1f5;
+  --slate:#22303f;
+  --slate-2:#2e4055;
+  --signal:#b26a00;
+  --signal-bg:#fff4e2;
+  --verified:#0e7c6b;
+  --verified-bg:#e4f4f0;
+  --muted:#64707e;
+  --faint:#95a1af;
+  --line:#dbe2ea;
+  --danger:#a4372a;
+  --danger-bg:#fbeeec;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-size:14px;cursor:pointer;min-height:44px}
+input,select,textarea{font-family:inherit;font-size:16px;min-height:44px}
+textarea{min-height:60px}
+:focus-visible{outline:2px solid #4a7dae;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+
+/* ---------- instrument bar ---------- */
+.bar{background:var(--slate);color:#fff;padding:16px 16px 18px}
+.bar-inner{max-width:1080px;margin:0 auto}
+.bar-top{display:flex;align-items:flex-start;gap:10px}
+.bar h1{margin:0;font-size:16px;font-weight:600;letter-spacing:.2px;flex:1;min-width:0}
+.bar h1 span{color:#8fa6bd;font-weight:400;font-size:13px}
+.syncdot{flex:none;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:#93a8bd;padding:4px 0;min-height:0}
+.syncdot i{width:9px;height:9px;border-radius:99px;display:inline-block;background:#5c6f83}
+.syncdot.s-ok i{background:#4fae8f}
+.syncdot.s-pend i{background:#d99a2b}
+.syncdot.s-err i{background:#d4604f}
+.gauges{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:14px}
+.gauge{min-width:96px}
+.gauge .v{font-family:var(--mono);font-size:21px;font-weight:600;letter-spacing:-.5px}
+.gauge .k{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#93a8bd;margin-top:2px}
+.track{margin-top:14px;height:5px;background:#3d5064;border-radius:99px;overflow:hidden}
+.track i{display:block;height:100%;background:#7fb2d8;border-radius:99px}
+.track-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:#93a8bd;margin-top:5px;gap:8px}
+
+/* ---------- nag banner ---------- */
+.nag{display:none;max-width:1080px;margin:12px auto 0;padding:0 16px}
+.nag.on{display:block}
+.nag-in{background:var(--signal-bg);border:1px solid #e8cfa4;border-radius:9px;padding:10px 14px;font-size:13.5px;color:#6b5227;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nag.loud .nag-in{background:var(--danger-bg);border-color:#e6c4bf;color:var(--danger);font-weight:600}
+.nag-in .btn{margin-left:auto}
+
+/* ---------- layout ---------- */
+main{max-width:1080px;margin:0 auto;padding:16px 16px 90px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted);margin:22px 0 10px;font-weight:700}
+
+/* ---------- next action ---------- */
+.next{background:var(--signal-bg);border:1px solid #e8cfa4;border-left:5px solid var(--signal);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.next .eyebrow{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:1.1px;color:var(--signal);font-weight:700}
+.next h3{margin:6px 0 4px;font-size:18px}
+.next p{margin:0;color:#6b5227;font-size:14px}
+.next .why{margin-top:9px;font-size:13px;color:#7a6136}
+
+/* ---------- indicators ---------- */
+.inds{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ind{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.ind .v{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.5px}
+.ind .v small{font-size:13px;color:var(--faint);font-weight:400;letter-spacing:0}
+.ind .k{font-size:11px;color:var(--muted);margin-top:2px}
+.ind .bar2{height:4px;background:var(--ground);border-radius:99px;margin-top:9px;overflow:hidden}
+.ind .bar2 i{display:block;height:100%;background:var(--verified);border-radius:99px}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:22px 0 16px;flex-wrap:wrap}
+.tab{background:none;border:none;padding:10px 13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--slate);border-bottom-color:var(--slate);font-weight:600}
+.panel{display:none}
+.panel.on{display:block}
+
+/* ---------- milestones ---------- */
+.yr{margin-bottom:8px}
+.yr-h{display:flex;align-items:baseline;gap:10px;margin:20px 0 8px;flex-wrap:wrap}
+.yr-h h3{margin:0;font-size:15px}
+.yr-h .yr-sub{font-size:12.5px;color:var(--muted)}
+.yr-h .yr-ct{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--faint)}
+.ms{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:11px 14px;margin-bottom:7px}
+.ms.done{border-color:#bfe0d8;background:var(--verified-bg)}
+.ms.ready{border-left:4px solid var(--signal)}
+.ms.blocked{opacity:.62}
+.ms-box{width:24px;height:24px;border:2px solid #b9c4d0;border-radius:6px;flex:none;margin-top:1px;cursor:pointer;background:#fff;position:relative;padding:0;min-height:0}
+.ms.done .ms-box{background:var(--verified);border-color:var(--verified)}
+.ms.done .ms-box::after{content:"";position:absolute;left:7px;top:2px;width:5px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.ms-box.auto{cursor:not-allowed;border-style:dashed}
+.ms-main{flex:1;min-width:0}
+.ms-t{font-size:14.5px;font-weight:500}
+.ms.done .ms-t{color:#0c5f52}
+.ms-m{font-size:12.5px;color:var(--muted);margin-top:2px}
+.ms-tag{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.7px;padding:2px 7px;border-radius:5px;flex:none;margin-top:4px}
+.t-ready{background:var(--signal-bg);color:var(--signal)}
+.t-blocked{background:#f0f2f5;color:var(--faint)}
+.t-done{background:#d4ece5;color:#0c5f52}
+.t-auto{background:#e8eefb;color:#3a5a9b}
+
+/* ---------- forms ---------- */
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:11px;margin-bottom:12px}
+.fld label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:600;margin-bottom:3px}
+.fld input,.fld select,.fld textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:2px solid #9dc0e0;outline-offset:-1px;border-color:#9dc0e0}
+.fld.wide{grid-column:1/-1}
+.btn{background:var(--slate);color:#fff;border:none;padding:9px 17px;border-radius:8px;font-weight:600}
+.btn:hover{background:var(--slate-2)}
+.btn.ghost{background:#fff;color:var(--slate);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--ground)}
+.btn.sm{padding:6px 11px;font-size:12.5px}
+.btn.danger{background:#fff;color:var(--danger);border:1px solid #e6c4bf}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------- data tables ---------- */
+.dt-wrap{overflow-x:auto;margin-top:6px}
+table.dt{width:100%;border-collapse:collapse;min-width:560px}
+.dt th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);border-bottom:1px solid var(--line);padding:7px 9px;font-weight:700}
+.dt td{border-bottom:1px solid #eef1f5;padding:9px;font-size:13.5px;vertical-align:top}
+.dt tr:last-child td{border-bottom:none}
+.dt .num,.num{font-family:var(--mono);white-space:nowrap}
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.5px}
+.p-yes{background:var(--verified-bg);color:#0c5f52}
+.p-no{background:#f3f0ee;color:#8a6b46}
+.empty{text-align:center;color:var(--faint);padding:26px 14px;font-size:14px;border:1px dashed var(--line);border-radius:9px}
+
+/* ---------- verdict ---------- */
+.verdict{border-radius:9px;padding:13px 15px;margin-top:14px;font-size:13.5px;border:1px solid}
+.v-no{background:#f7f8fa;border-color:var(--line);color:var(--muted)}
+.v-weak{background:var(--signal-bg);border-color:#e8cfa4;color:#6b5227}
+.v-go{background:var(--verified-bg);border-color:#bfe0d8;color:#0c5f52}
+.verdict b{display:block;font-family:var(--mono);text-transform:uppercase;letter-spacing:.9px;font-size:11px;margin-bottom:4px}
+
+/* ---------- curve ---------- */
+.curve{display:flex;align-items:flex-end;gap:9px;height:110px;margin-top:14px;padding-top:8px;border-bottom:1px solid var(--line)}
+.cbar{flex:1;max-width:56px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.cbar i{display:block;width:100%;background:var(--slate);border-radius:4px 4px 0 0;min-height:3px}
+.cbar span{font-family:var(--mono);font-size:11px;margin-bottom:4px;color:var(--muted)}
+.clbl{display:flex;gap:9px;margin-top:5px}
+.clbl div{flex:1;max-width:56px;text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+
+/* ---------- weekly ---------- */
+.chk{display:flex;gap:10px;align-items:flex-start;padding:9px 0;font-size:14px;cursor:pointer}
+.chk input{margin-top:2px;width:20px;height:20px;min-height:0;accent-color:var(--verified);flex:none}
+.streak{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap}
+.wk{width:26px;height:26px;border-radius:6px;background:var(--ground);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--faint)}
+.wk.hit{background:var(--verified);border-color:var(--verified);color:#fff}
+
+/* ---------- data tab / sync ---------- */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;margin-top:10px}
+.kv dt{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;padding-top:2px}
+.kv dd{margin:0;font-family:var(--mono);font-size:13px;word-break:break-word}
+.sync-err{background:var(--danger-bg);border:1px solid #e6c4bf;border-radius:9px;padding:11px 14px;font-size:13.5px;color:var(--danger);margin-top:12px}
+.sync-ok{background:var(--verified-bg);border:1px solid #bfe0d8;border-radius:9px;padding:11px 14px;font-size:13.5px;color:#0c5f52;margin-top:12px}
+.sync-off{background:#f7f8fa;border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-size:13.5px;color:var(--muted);margin-top:12px}
+pre.diff{font-family:var(--mono);font-size:12px;background:#f7f8fa;border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;white-space:pre-wrap}
+
+/* ---------- modal ---------- */
+.overlay{display:none;position:fixed;inset:0;background:rgba(18,24,31,.55);z-index:50;padding:16px;overflow-y:auto}
+.overlay.on{display:flex;align-items:flex-start;justify-content:center}
+.modal{background:var(--paper);border-radius:12px;max-width:560px;width:100%;padding:20px;margin-top:6vh}
+.modal h3{margin:0 0 8px;font-size:17px}
+.modal .note{margin-top:8px}
+
+.note{font-size:12.5px;color:var(--muted);margin-top:10px}
+.foot{max-width:1080px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:var(--faint)}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+@media(min-width:640px){
+  .bar{padding:20px 28px 22px}
+  main{padding:22px 28px 90px}
+  .foot{padding:0 28px 40px}
+  .nag{padding:0 28px}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-inner">
+    <div class="bar-top">
+      <h1>AI Goal Console <span>— AI implementation consulting, Minnesota micro-businesses</span></h1>
+      <div class="syncdot" id="syncDot" title="Backup status"><i></i><span id="syncDotLbl">local</span></div>
+    </div>
+    <div class="gauges">
+      <div class="gauge"><div class="v" id="gPhase">—</div><div class="k">Current phase</div></div>
+      <div class="gauge"><div class="v" id="gElapsed">—</div><div class="k">Days elapsed</div></div>
+      <div class="gauge"><div class="v" id="gLeft">—</div><div class="k">Days remaining</div></div>
+      <div class="gauge"><div class="v" id="gRev">—</div><div class="k">Trailing 12-mo avg</div></div>
+      <div class="gauge"><div class="v" id="gMs">—</div><div class="k">Milestones done</div></div>
+    </div>
+    <div class="track"><i id="tFill"></i></div>
+    <div class="track-lbl"><span>Aug 19 2026 · Month 0</span><span id="tPct"></span><span>Aug 2031 · Month 60</span></div>
+  </div>
+</div>
+
+<div class="nag" id="nag"><div class="nag-in"><span id="nagTxt"></span><button class="btn sm" id="nagBackup">Back up now</button></div></div>
+
+<main>
+
+  <div class="next" id="nextCard"></div>
+
+  <h2 class="sec">Leading indicators — the things you control</h2>
+  <div class="inds" id="inds"></div>
+
+  <div class="tabs">
+    <button class="tab on" data-p="ms">Milestones</button>
+    <button class="tab" data-p="iv">Interview log</button>
+    <button class="tab" data-p="en">Engagements</button>
+    <button class="tab" data-p="wk">Weekly review</button>
+    <button class="tab" data-p="dz">Data</button>
+  </div>
+
+  <!-- MILESTONES -->
+  <div class="panel on" id="p-ms">
+    <div class="card">
+      <div style="font-size:13.5px;color:var(--muted)">
+        Items marked <span class="ms-tag t-auto" style="display:inline-block">auto</span> complete themselves when you log the underlying data — you can't tick them by hand, and that's deliberate. A milestone that can be ticked without evidence is a milestone you can lie to yourself about.
+      </div>
+    </div>
+    <div id="msRoot"></div>
+  </div>
+
+  <!-- INTERVIEWS -->
+  <div class="panel" id="p-iv">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <strong style="font-size:15px">Log an interview</strong>
+        <span style="font-size:12.5px;color:var(--muted)">Fill this out within an hour of hanging up — recall smooths out the useful inconsistencies.</span>
+      </div>
+      <div class="frm">
+        <div class="fld"><label for="iDate">Date</label><input type="date" id="iDate"></div>
+        <div class="fld"><label for="iBiz">Business</label><input id="iBiz" placeholder="Repair Lair"></div>
+        <div class="fld"><label for="iVert">Vertical</label>
+          <select id="iVert">
+            <option>Local services / trades</option>
+            <option>Professional services</option>
+            <option>Retail / e-commerce</option>
+            <option>Hospitality / food service</option>
+          </select>
+        </div>
+        <div class="fld"><label for="iEmp">Employees</label><input id="iEmp" type="number" min="1" placeholder="4"></div>
+        <div class="fld wide"><label for="iPain">Pain point — their words if possible</label><textarea id="iPain" rows="2" placeholder="Verbatim beats paraphrase."></textarea></div>
+        <div class="fld"><label for="iSpend">Prior spend or attempt</label>
+          <select id="iSpend">
+            <option value="none">No — never tried anything</option>
+            <option value="considered">Considered and rejected</option>
+            <option value="tried">Tried, unpaid tool</option>
+            <option value="paid">Yes — paid real money</option>
+          </select>
+        </div>
+        <div class="fld"><label for="iSpendD">What they spent / tried</label><input id="iSpendD" placeholder="$40/mo practice mgmt sw, abandoned"></div>
+        <div class="fld"><label for="iInt">Emotional intensity</label>
+          <select id="iInt"><option>Low</option><option>Annoyed</option><option>Actively hunting for a fix</option></select>
+        </div>
+        <div class="fld"><label for="iPay">Acceptable payback period</label>
+          <select id="iPay"><option value="">Not asked</option><option>Under 6 months</option><option>6–12 months</option><option>12–24 months</option><option>Over 24 months</option></select>
+        </div>
+        <div class="fld"><label for="iRef">Referral generated</label><select id="iRef"><option>No</option><option>Yes</option></select></div>
+        <div class="fld wide"><label for="iTags">Pattern tags — comma separated</label><input id="iTags" placeholder="change-order tracking, field data-entry friction"></div>
+      </div>
+      <button class="btn" id="iAdd">Log interview</button>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">Sample so far</strong>
+      <div id="ivStats" class="note"></div>
+      <div id="ivTable"></div>
+      <div id="ivVerdict"></div>
+    </div>
+  </div>
+
+  <!-- ENGAGEMENTS -->
+  <div class="panel" id="p-en">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <strong style="font-size:15px">Log an engagement</strong>
+        <span style="font-size:12.5px;color:var(--muted)">Scoping hours stay separate from build hours — mixing them hides the curve.</span>
+      </div>
+      <div class="frm">
+        <div class="fld"><label for="eName">Client</label><input id="eName" placeholder="Client #1"></div>
+        <div class="fld"><label for="eDate">Date fee collected</label><input type="date" id="eDate"></div>
+        <div class="fld"><label for="eInv">Fee invoiced ($)</label><input type="number" id="eInv" min="0" placeholder="900"></div>
+        <div class="fld"><label for="eCol">Fee collected ($)</label><input type="number" id="eCol" min="0" placeholder="900"></div>
+        <div class="fld"><label for="eScope">Scoping hours</label><input type="number" id="eScope" min="0" step="0.25"></div>
+        <div class="fld"><label for="eBuild">Build hours</label><input type="number" id="eBuild" min="0" step="0.25"></div>
+        <div class="fld"><label for="eSup">Support-window hours</label><input type="number" id="eSup" min="0" step="0.25"></div>
+        <div class="fld wide"><label for="eVal">Client-stated annual value — verbatim</label><textarea id="eVal" rows="2" placeholder="&quot;It's probably costing me five grand a year.&quot;"></textarea></div>
+      </div>
+      <button class="btn" id="eAdd">Log engagement</button>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">Realized $/hr — the learning curve</strong>
+      <div id="enCurve"></div>
+      <div id="enTable"></div>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">Pitch tally</strong>
+      <div class="note">Close rate is an assumption until you've pitched. Three pitches gives you a real ratio, however small the sample.</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost sm" id="pMade">+ Pitch made</button>
+        <button class="btn ghost sm" id="pWon">+ Pitch won</button>
+        <button class="btn ghost sm" id="pUndo">Undo last</button>
+        <span class="num" id="pitchOut" style="margin-left:6px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div class="panel" id="p-wk">
+    <div class="card">
+      <strong style="font-size:15px">The 15-minute weekly review</strong>
+      <div class="note">Same slot every week. The review is the habit; the goal is too far away to be one. Miss a week and log it as missed — the streak resetting is information, not a punishment.</div>
+      <div style="margin-top:12px" id="wkList"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="wkDone">Mark this week reviewed</button>
+        <span class="note" id="wkStatus" style="margin:0"></span>
+      </div>
+      <div class="streak" id="wkStreak"></div>
+      <div class="note">Last 16 weeks. Filled = reviewed.</div>
+    </div>
+    <div class="card">
+      <strong style="font-size:15px">This week's one commitment</strong>
+      <div class="note">One sentence, doable in a single sitting, phrased as when-and-where rather than a wish. "Thursday 8pm, at the kitchen table, I'll email the shop to book the interview" beats "reach out to Repair Lair."</div>
+      <div class="fld" style="margin-top:10px"><textarea id="wkCommit" rows="2" placeholder="When, where, what."></textarea></div>
+      <button class="btn ghost sm" id="wkSaveCommit">Save commitment</button>
+      <span class="note" id="wkCommitSaved" style="margin-left:8px"></span>
+    </div>
+  </div>
+
+  <!-- DATA -->
+  <div class="panel" id="p-dz">
+
+    <div class="card">
+      <strong style="font-size:15px">Google Drive sync</strong>
+      <div id="dzSyncBox"></div>
+      <dl class="kv" id="dzSyncKv"></dl>
+      <div class="row" style="margin-top:12px" id="dzSyncBtns">
+        <button class="btn" id="dzAuth" style="display:none">Connect Google Drive</button>
+        <button class="btn" id="dzReauth" style="display:none">Re-authorize</button>
+        <button class="btn ghost" id="dzSyncNow" style="display:none">Sync now</button>
+        <button class="btn ghost" id="dzVerify" style="display:none">Verify backup</button>
+        <button class="btn ghost sm" id="dzDisconnect" style="display:none">Disconnect</button>
+      </div>
+      <div id="dzVerifyOut"></div>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">Manual backup</strong>
+      <div class="note">Deliberately redundant with Drive sync — two independent providers, two independent failure modes. "Back up now" opens the Android share sheet so you can push the file to OneDrive.</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="dzShare">Back up now (share sheet)</button>
+        <button class="btn ghost" id="dzExport">Download backup (.json)</button>
+      </div>
+      <div class="note" id="dzShareMsg"></div>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">Import a backup</strong>
+      <div class="note">Merges by record identity — never by position, never by appending. Importing the same file twice changes nothing. You'll see a preview and confirm before anything is written.</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost" id="dzImportBtn">Import backup…</button>
+        <button class="btn ghost" id="dzUndoImport" style="display:none">Undo last import</button>
+        <input type="file" id="dzImport" accept=".json,application/json" style="display:none">
+      </div>
+      <div class="note" id="dzImportMsg"></div>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">App &amp; storage</strong>
+      <dl class="kv" id="dzAppKv"></dl>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost" id="dzInstall" style="display:none">Install app</button>
+      </div>
+      <div class="fld" style="margin-top:12px;max-width:280px">
+        <label for="dzDevice">Device label (stamped into backups)</label>
+        <input id="dzDevice" placeholder="pixel-chrome">
+      </div>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">Danger zone</strong>
+      <div class="note">Erases every interview, engagement, milestone tick, and weekly mark on this device. Your Drive backup is not touched.</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn danger" id="dzReset">Erase everything on this device</button>
+      </div>
+      <div class="note" id="dzMsg"></div>
+    </div>
+
+    <div class="card">
+      <strong style="font-size:15px">What this console does not track</strong>
+      <div class="note">
+        Expenses, the E&amp;O premium once quoted, pricing decisions, and the risk register live in The 5 Year Goal Plan document. This is the execution surface; that is the reasoning record. When a real number lands here, it belongs in the document too — with a revision-history row.
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- import preview modal -->
+<div class="overlay" id="impOverlay">
+  <div class="modal">
+    <h3>Import preview</h3>
+    <div id="impSummary" style="font-size:14px"></div>
+    <div class="note" id="impDetail"></div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn" id="impConfirm">Apply merge</button>
+      <button class="btn ghost" id="impCancel">Cancel — change nothing</button>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  Baseline Aug 19 2026 · target Aug 2031 · built from The 5 Year Goal Plan rev 1.0 and customer-discovery-plan.md
+</div>
+
+<script id="gc-core">
+/*==GC_CORE_BEGIN==*/
+/* Pure logic — no DOM access. This entire block is extracted verbatim and
+   executed headlessly by tests/harness.mjs, so anything here is covered by
+   the automated tests against the exact shipped bytes. */
+"use strict";
+const GC = (() => {
+
+  const SCHEMA = "goal-console";
+  const SCHEMA_VERSION = 1;
+  const BASE = new Date("2026-08-19T00:00:00");
+  const END = new Date("2031-08-19T00:00:00");
+  const TOTAL_DAYS = 1826;
+
+  /* ---------------- identity ---------------- */
+
+  function uuid() {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+    // fallback (non-secure contexts); still unique enough for a single-user app
+    return "u-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  }
+
+  function nowISO() { return new Date().toISOString(); }
+
+  function blankData() {
+    return {
+      interviews: [], engagements: [],
+      pitchesMade: 0, pitchesWon: 0,
+      manual: {}, weeks: [], wkChecks: {},
+      commit: "", commitUpdatedAt: "",
+      deletedIds: []
+    };
+  }
+
+  /* Stable fields used to content-match records that arrive without an id.
+     Deterministic: the same content always maps to the same derived id, which
+     keeps imports of id-less records idempotent. */
+  const CONTENT_FIELDS = {
+    interviews: ["date", "biz", "vert", "emp", "pain", "spend", "spendD", "int", "pay", "ref", "tags"],
+    engagements: ["name", "date", "invoiced", "collected", "scope", "build", "sup", "val"]
+  };
+
+  function contentKey(rec, kind) {
+    const o = {};
+    for (const f of CONTENT_FIELDS[kind]) o[f] = rec[f] == null ? "" : String(rec[f]);
+    return canonicalize(o);
+  }
+
+  /* FNV-1a 32-bit ×2 over the content key — synchronous, deterministic.
+     Used only to mint ids for legacy/id-less records, not for integrity. */
+  function contentId(rec, kind) {
+    const s = contentKey(rec, kind);
+    let h1 = 0x811c9dc5, h2 = 0x01000193;
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charCodeAt(i);
+      h1 = ((h1 ^ c) * 0x01000193) >>> 0;
+      h2 = (((h2 << 5) - h2) + c) >>> 0;
+    }
+    return "c-" + h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0");
+  }
+
+  /* ---------------- canonical serialization + checksum ---------------- */
+
+  /* Deterministic JSON: object keys sorted recursively; arrays whose elements
+     all carry an `id` are sorted by id. Undefined values are dropped (matching
+     JSON.stringify semantics). */
+  function canonicalize(v) {
+    return JSON.stringify(sortValue(v));
+  }
+  function sortValue(v) {
+    if (Array.isArray(v)) {
+      const mapped = v.map(sortValue);
+      if (mapped.length && mapped.every(x => x && typeof x === "object" && !Array.isArray(x) && typeof x.id === "string")) {
+        mapped.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+      }
+      return mapped;
+    }
+    if (v && typeof v === "object") {
+      const out = {};
+      for (const k of Object.keys(v).sort()) {
+        if (v[k] !== undefined) out[k] = sortValue(v[k]);
+      }
+      return out;
+    }
+    return v;
+  }
+
+  async function sha256Hex(str) {
+    const buf = new TextEncoder().encode(str);
+    const subtle = (typeof crypto !== "undefined" && crypto.subtle) ? crypto.subtle : null;
+    if (!subtle) throw new Error("SubtleCrypto unavailable — checksums require a secure context.");
+    const digest = await subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function computeChecksum(data) {
+    return sha256Hex(canonicalize(data));
+  }
+
+  function counts(data) {
+    return {
+      interviews: (data.interviews || []).length,
+      engagements: (data.engagements || []).length,
+      deletedIds: (data.deletedIds || []).length
+    };
+  }
+
+  async function makeExport(data, deviceLabel) {
+    const checksum = await computeChecksum(data);
+    return {
+      schema: SCHEMA,
+      schemaVersion: SCHEMA_VERSION,
+      exportedAt: nowISO(),
+      deviceLabel: deviceLabel || "unlabeled",
+      counts: counts(data),
+      checksum,
+      data
+    };
+  }
+
+  /* ---------------- backup validation ---------------- */
+
+  /* Returns { ok, legacy, errors: [...], data } — data is the normalized
+     payload ready for merging (records guaranteed to have id/createdAt/updatedAt).
+     Checksum verification is separate (async) — see verifyExport. */
+  function validateBackupShape(obj) {
+    const errors = [];
+    if (!obj || typeof obj !== "object") return { ok: false, errors: ["Not a JSON object."] };
+
+    // Legacy prototype format: bare state object, no schema envelope.
+    const legacy = obj.schema !== SCHEMA && (Array.isArray(obj.interviews) || Array.isArray(obj.engagements));
+    if (legacy) {
+      return { ok: true, legacy: true, errors: [], data: normalizeData(obj, obj.exportedAt || null) };
+    }
+
+    if (obj.schema !== SCHEMA) errors.push('Missing or wrong "schema" field — expected "goal-console".');
+    if (typeof obj.schemaVersion !== "number") errors.push('Missing "schemaVersion".');
+    else if (obj.schemaVersion > SCHEMA_VERSION) errors.push(`Backup schemaVersion ${obj.schemaVersion} is newer than this app understands (${SCHEMA_VERSION}). Update the app before importing.`);
+    if (!obj.data || typeof obj.data !== "object") errors.push('Missing "data" object.');
+    if (typeof obj.checksum !== "string" || !/^[0-9a-f]{64}$/.test(obj.checksum)) errors.push('Missing or malformed "checksum".');
+    if (errors.length) return { ok: false, legacy: false, errors };
+    return { ok: true, legacy: false, errors: [], data: normalizeData(obj.data, obj.exportedAt || null) };
+  }
+
+  /* Verify checksum + counts of a v1 export envelope. */
+  async function verifyExport(obj) {
+    const out = { checksumOk: false, countsOk: true, countsDetail: "", computed: "" };
+    out.computed = await computeChecksum(obj.data);
+    out.checksumOk = out.computed === obj.checksum;
+    if (obj.counts && typeof obj.counts === "object") {
+      const c = counts(obj.data);
+      const diffs = [];
+      for (const k of ["interviews", "engagements", "deletedIds"]) {
+        if (obj.counts[k] !== undefined && obj.counts[k] !== c[k]) diffs.push(`${k}: header says ${obj.counts[k]}, data has ${c[k]}`);
+      }
+      out.countsOk = diffs.length === 0;
+      out.countsDetail = diffs.join("; ");
+    }
+    return out;
+  }
+
+  /* Ensure every record has id/createdAt/updatedAt; id-less records get a
+     deterministic content-derived id. fallbackTime stamps legacy records. */
+  function normalizeData(raw, fallbackTime) {
+    const d = Object.assign(blankData(), raw || {});
+    const t = fallbackTime || "1970-01-01T00:00:00.000Z";
+    for (const kind of ["interviews", "engagements"]) {
+      d[kind] = (d[kind] || []).map(r => {
+        const rec = Object.assign({}, r);
+        if (typeof rec.id !== "string" || !rec.id) rec.id = contentId(rec, kind);
+        if (typeof rec.createdAt !== "string" || !rec.createdAt) rec.createdAt = t;
+        if (typeof rec.updatedAt !== "string" || !rec.updatedAt) rec.updatedAt = rec.createdAt;
+        return rec;
+      });
+    }
+    d.deletedIds = (d.deletedIds || []).filter(x => x && typeof x.id === "string")
+      .map(x => ({ id: x.id, deletedAt: x.deletedAt || t }));
+    d.pitchesMade = Math.max(0, +d.pitchesMade || 0);
+    d.pitchesWon = Math.min(Math.max(0, +d.pitchesWon || 0), d.pitchesMade);
+    d.manual = d.manual && typeof d.manual === "object" ? d.manual : {};
+    d.weeks = Array.isArray(d.weeks) ? [...new Set(d.weeks)].sort() : [];
+    d.wkChecks = d.wkChecks && typeof d.wkChecks === "object" ? d.wkChecks : {};
+    d.commit = typeof d.commit === "string" ? d.commit : "";
+    d.commitUpdatedAt = typeof d.commitUpdatedAt === "string" ? d.commitUpdatedAt : "";
+    return d;
+  }
+
+  /* ---------------- merge — the critical section ---------------- */
+
+  function ts(s) { const t = Date.parse(s || ""); return isNaN(t) ? 0 : t; }
+
+  /* mergeData(local, incoming) -> { merged, summary }
+     Pure and deterministic. Never mutates its inputs.
+     Per-record last-write-wins by updatedAt (tie -> local copy kept).
+     Tombstones: a deleted id stays deleted unless a copy's updatedAt is
+     strictly newer than the deletion timestamp, in which case it resurrects. */
+  function mergeData(localRaw, incomingRaw) {
+    const local = normalizeData(JSON.parse(JSON.stringify(localRaw)), null);
+    const inc = normalizeData(JSON.parse(JSON.stringify(incomingRaw)), null);
+
+    const summary = {
+      interviews: { added: 0, updated: 0, skipped: 0 },
+      engagements: { added: 0, updated: 0, skipped: 0 },
+      deletionsHonored: 0, resurrected: 0,
+      weeksAdded: 0, manualAdded: 0,
+      pitchesChanged: false, commitChanged: false,
+      changed: false
+    };
+
+    // Union tombstones: keep the latest deletion time per id.
+    const tomb = new Map();
+    for (const side of [local.deletedIds, inc.deletedIds]) {
+      for (const t of side) {
+        const prev = tomb.get(t.id);
+        if (!prev || ts(t.deletedAt) > ts(prev.deletedAt)) tomb.set(t.id, { id: t.id, deletedAt: t.deletedAt });
+      }
+    }
+
+    const merged = blankData();
+
+    for (const kind of ["interviews", "engagements"]) {
+      const lm = new Map(local[kind].map(r => [r.id, r]));
+      const im = new Map(inc[kind].map(r => [r.id, r]));
+      const ids = [...new Set([...lm.keys(), ...im.keys()])];
+      const out = [];
+      for (const id of ids) {
+        const l = lm.get(id), i = im.get(id);
+        // pick the newer copy; tie or missing timestamps -> prefer local
+        let winner = l;
+        if (l && i) winner = ts(i.updatedAt) > ts(l.updatedAt) ? i : l;
+        else if (!l) winner = i;
+
+        const t = tomb.get(id);
+        if (t) {
+          if (ts(winner.updatedAt) > ts(t.deletedAt)) {
+            // edit after delete wins — resurrect, drop the tombstone
+            tomb.delete(id);
+            out.push(winner);
+            summary.resurrected++;
+            if (!l) summary[kind].added++;
+          } else {
+            if (l) summary.deletionsHonored++; // incoming tombstone removes a local record
+            // else: incoming record already deleted locally -> stays deleted, not counted as skip
+          }
+          continue;
+        }
+        out.push(winner);
+        if (l && i) {
+          if (winner === i && ts(i.updatedAt) > ts(l.updatedAt)) summary[kind].updated++;
+          else summary[kind].skipped++;
+        } else if (!l) {
+          summary[kind].added++;
+        }
+        // local-only records are simply kept; not counted
+      }
+      out.sort((a, b) => ts(a.createdAt) - ts(b.createdAt) || (a.id < b.id ? -1 : 1));
+      merged[kind] = out;
+    }
+
+    merged.deletedIds = [...tomb.values()].sort((a, b) => a.id < b.id ? -1 : 1);
+
+    // Scalars: max. Won can never exceed made.
+    merged.pitchesMade = Math.max(local.pitchesMade, inc.pitchesMade);
+    merged.pitchesWon = Math.min(Math.max(local.pitchesWon, inc.pitchesWon), merged.pitchesMade);
+    summary.pitchesChanged = merged.pitchesMade !== local.pitchesMade || merged.pitchesWon !== local.pitchesWon;
+
+    // Manual milestone ticks: union, true wins.
+    merged.manual = Object.assign({}, local.manual);
+    for (const k of Object.keys(inc.manual)) {
+      if (inc.manual[k] && !merged.manual[k]) { merged.manual[k] = true; summary.manualAdded++; }
+    }
+
+    // Weeks: set union.
+    const wk = new Set(local.weeks);
+    for (const w of inc.weeks) { if (!wk.has(w)) { wk.add(w); summary.weeksAdded++; } }
+    merged.weeks = [...wk].sort();
+
+    // Weekly checkboxes: union, true wins (low-stakes UI state).
+    merged.wkChecks = Object.assign({}, inc.wkChecks, local.wkChecks);
+
+    // Commitment: newer by commitUpdatedAt when both are stamped;
+    // legacy incoming (no stamp) wins only if local is empty.
+    if (inc.commitUpdatedAt && ts(inc.commitUpdatedAt) > ts(local.commitUpdatedAt)) {
+      merged.commit = inc.commit; merged.commitUpdatedAt = inc.commitUpdatedAt;
+    } else if (!inc.commitUpdatedAt && inc.commit && !local.commit) {
+      merged.commit = inc.commit; merged.commitUpdatedAt = "";
+    } else {
+      merged.commit = local.commit; merged.commitUpdatedAt = local.commitUpdatedAt;
+    }
+    summary.commitChanged = merged.commit !== local.commit;
+
+    summary.changed = canonicalize(merged) !== canonicalize(local);
+    return { merged, summary };
+  }
+
+  function summarizeMergePlan(s) {
+    if (!s.changed) {
+      const skips = s.interviews.skipped + s.engagements.skipped;
+      return "No changes — local state already contains everything in this backup" +
+        (skips ? ` (${skips} record${skips === 1 ? "" : "s"} already present).` : ".");
+    }
+    const parts = [];
+    const seg = (n, verb, noun) => n > 0 && parts.push(`${verb} ${n} ${noun}${n === 1 ? "" : "s"}`);
+    seg(s.interviews.added, "add", "interview");
+    seg(s.interviews.updated, "update", "interview");
+    seg(s.engagements.added, "add", "engagement");
+    seg(s.engagements.updated, "update", "engagement");
+    const skips = s.interviews.skipped + s.engagements.skipped;
+    if (skips > 0) parts.push(`skip ${skips} already present`);
+    seg(s.deletionsHonored, "honor", "deletion");
+    seg(s.resurrected, "resurrect", "record edited after deletion");
+    seg(s.weeksAdded, "add", "weekly-review mark");
+    seg(s.manualAdded, "add", "manual milestone tick");
+    if (s.pitchesChanged) parts.push("update pitch counters");
+    if (s.commitChanged) parts.push("update the weekly commitment");
+    if (!parts.length) return "No changes — local state already contains everything in this backup.";
+    return "Will " + parts.join(", ") + ".";
+  }
+
+  /* Compare two data objects record-by-record; returns human-readable diff lines. */
+  function diffData(a, b, aLabel, bLabel) {
+    const lines = [];
+    for (const kind of ["interviews", "engagements"]) {
+      const am = new Map((a[kind] || []).map(r => [r.id, r]));
+      const bm = new Map((b[kind] || []).map(r => [r.id, r]));
+      for (const [id, r] of am) {
+        if (!bm.has(id)) lines.push(`${kind.slice(0, -1)} "${r.biz || r.name || id}" exists in ${aLabel} but not ${bLabel}`);
+        else if (canonicalize(sortValue(r)) !== canonicalize(sortValue(bm.get(id)))) lines.push(`${kind.slice(0, -1)} "${r.biz || r.name || id}" differs between ${aLabel} and ${bLabel}`);
+      }
+      for (const [id, r] of bm) {
+        if (!am.has(id)) lines.push(`${kind.slice(0, -1)} "${r.biz || r.name || id}" exists in ${bLabel} but not ${aLabel}`);
+      }
+    }
+    for (const k of ["pitchesMade", "pitchesWon", "commit"]) {
+      if ((a[k] || "") !== (b[k] || "")) lines.push(`${k}: ${aLabel}=${JSON.stringify(a[k])} vs ${bLabel}=${JSON.stringify(b[k])}`);
+    }
+    if (canonicalize((a.weeks || []).slice().sort()) !== canonicalize((b.weeks || []).slice().sort())) lines.push(`weekly-review marks differ`);
+    if (canonicalize(sortValue(a.manual || {})) !== canonicalize(sortValue(b.manual || {}))) lines.push(`manual milestone ticks differ`);
+    if (canonicalize(sortValue(a.deletedIds || [])) !== canonicalize(sortValue(b.deletedIds || []))) lines.push(`deletion tombstones differ`);
+    return lines;
+  }
+
+  /* ---------------- metrics ---------------- */
+
+  function ratePerHour(e) {
+    const h = (+e.scope || 0) + (+e.build || 0) + (+e.sup || 0);
+    return h > 0 ? (+e.collected || 0) / h : null;
+  }
+
+  function trailing12(engagements, now) {
+    const n = now ? new Date(now) : new Date();
+    const cut = new Date(n); cut.setFullYear(cut.getFullYear() - 1);
+    const total = (engagements || [])
+      .filter(e => e.date && new Date(e.date) >= cut && new Date(e.date) <= n)
+      .reduce((a, e) => a + (+e.collected || 0), 0);
+    return total / 12;
+  }
+
+  function totalHours(engagements) {
+    return (engagements || []).reduce((a, e) => a + (+e.scope || 0) + (+e.build || 0) + (+e.sup || 0), 0);
+  }
+
+  const VERTICALS = ["Local services / trades", "Professional services", "Retail / e-commerce", "Hospitality / food service"];
+
+  function ivBreakdown(interviews) {
+    const v = {};
+    for (const i of interviews || []) v[i.vert] = (v[i.vert] || 0) + 1;
+    const complete = (interviews || []).length >= 12 &&
+      VERTICALS.every(x => (v[x] || 0) >= 3);
+    return { byVertical: v, total: (interviews || []).length, complete };
+  }
+
+  /* ---------------- decision rule ---------------- */
+
+  /* Group by normalized tag (lowercase, trimmed). Most frequent tag decides;
+     ties break lexicographically for determinism.
+     <12 interviews          -> sample (no verdict)
+     top tag >=3, spend >=2  -> go
+     top tag >=3, spend <2   -> weak   (Falsifier C live)
+     no tag reaches 3        -> nogo   (Falsifier B) */
+  function decision(interviews) {
+    const s = interviews || [];
+    if (s.length < 12) return { status: "sample", remaining: 12 - s.length };
+    const tags = {};
+    for (const i of s) {
+      const seen = new Set();
+      for (const t of String(i.tags || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean)) {
+        if (!seen.has(t)) { (tags[t] = tags[t] || []).push(i); seen.add(t); }
+      }
+    }
+    let best = null;
+    for (const t of Object.keys(tags).sort()) {
+      if (!best || tags[t].length > tags[best].length) best = t;
+    }
+    const grp = best ? tags[best] : [];
+    const withSpend = grp.filter(i => i.spend === "paid" || i.spend === "tried").length;
+    if (grp.length >= 3 && withSpend >= 2) return { status: "go", tag: best, count: grp.length, withSpend };
+    if (grp.length >= 3) return { status: "weak", tag: best, count: grp.length, withSpend };
+    return { status: "nogo", topCount: grp.length };
+  }
+
+  /* ---------------- milestones ---------------- */
+
+  const MS = [
+    { y: 1, id: "repair", t: "Run the Repair Lair interview", m: "Warm network, disclosed-intent framing. Needs no entity, no pricing, no landscape scan.", deps: [], auto: (d) => d.interviews.length >= 1 },
+    { y: 1, id: "eo", t: "Get a real E&O quote", m: "TechInsurance / Insureon. A pricing input, not a commitment to buy.", deps: [] },
+    { y: 1, id: "entity", t: "Decide entity — LLC or sole proprietor", m: "Decoupled from insurance. Decide on bookkeeping and perception grounds.", deps: [] },
+    { y: 1, id: "payback", t: "Add the payback-period question to the interview script", m: "A Q7 follow-up. Ten minutes of work; sets the pricing ceiling.", deps: [] },
+    { y: 1, id: "iv12", t: "12 discovery interviews across all four verticals", m: "Auto-completes at 12 logged, minimum 3 per vertical.", deps: ["repair"], auto: (d) => ivBreakdown(d.interviews).complete },
+    { y: 1, id: "falsd", t: "Run Falsifier D against the first real pain point", m: "Per-engagement gate: is this already solved off the shelf?", deps: ["repair"] },
+    { y: 1, id: "synth", t: "GO / WEAK GO / NO GO synthesis", m: "The decision rule runs itself on the interview tab — this is you acting on it.", deps: ["iv12"] },
+    { y: 1, id: "pitch", t: "Pitch script written and rehearsed", m: "Blocked until entity and insurance pricing are known.", deps: ["eo", "entity"] },
+    { y: 1, id: "c1", t: "Close the first founding-client engagement", m: "Auto-completes when an engagement is logged.", deps: ["pitch"], auto: (d) => d.engagements.length >= 1 },
+    { y: 1, id: "hours", t: "First real hours-per-engagement measurement", m: "The critical checkpoint. Auto-completes when an engagement has build hours logged.", deps: ["c1"], auto: (d) => d.engagements.some(e => (+e.build || 0) > 0) },
+    { y: 1, id: "c23", t: "Close engagements two and three", m: "Auto-completes at three logged engagements.", deps: ["c1"], auto: (d) => d.engagements.length >= 3 },
+    { y: 2, id: "recal", t: "Re-run the capacity feasibility check with measured hours", m: "The single most important checkpoint in the plan. Update the document, add a revision row.", deps: ["hours"] },
+    { y: 2, id: "tmpl", t: "Build the template library from Year 1 builds", m: "Make scenarios, cheat sheets, context-brief format.", deps: ["c23"] },
+    { y: 2, id: "nond", t: "Direct compression at non-delivery hours", m: "Lead gen, admin, support — that is where the hour deficit sits.", deps: ["recal"] },
+    { y: 2, id: "y2rev", t: "Reach ~$1,500–2,000/mo trailing average", m: "Auto-completes when trailing 12-month average crosses $1,500.", deps: ["c23"], auto: (d, now) => trailing12(d.engagements, now) >= 1500 },
+    { y: 3, id: "cad", t: "Sustain ~1 engagement per month", m: "Market-rate pricing, no longer founding-client discounted.", deps: ["y2rev"] },
+    { y: 3, id: "refr", t: "Referral pipeline active", m: "Snowball referrals directly reduce lead-gen hours.", deps: ["c23"] },
+    { y: 3, id: "y3rev", t: "Reach ~$3,000/mo trailing average", m: "Auto-completes at $3,000.", deps: ["cad"], auto: (d, now) => trailing12(d.engagements, now) >= 3000 },
+    { y: 4, id: "y4rev", t: "Reach ~$4,000/mo trailing average", m: "First time hitting the nominal target. Auto-completes at $4,000.", deps: ["y3rev"], auto: (d, now) => trailing12(d.engagements, now) >= 4000 },
+    { y: 5, id: "hold", t: "Hold the average through a full seasonal cycle", m: "No structural changes this year. This one confirms it was not a good quarter.", deps: ["y4rev"] },
+    { y: 5, id: "goal", t: "Month 60 trailing-12-month average ≥ $4,000/mo", m: "Goal complete.", deps: ["hold"], auto: (d, now) => trailing12(d.engagements, now) >= 4000 && (now ? new Date(now) : new Date()) >= END }
+  ];
+
+  const YEARS = {
+    1: ["Year 1 · Aug 2026 – Aug 2027", "Resolve blockers, get real data"],
+    2: ["Year 2 · Aug 2027 – Aug 2028", "Recalibrate and build cadence"],
+    3: ["Year 3 · Aug 2028 – Aug 2029", "Approach steady cadence"],
+    4: ["Year 4 · Aug 2029 – Aug 2030", "Steady state"],
+    5: ["Year 5 · Aug 2030 – Aug 2031", "Hold and confirm"]
+  };
+
+  function msDone(m, data, now) {
+    return m.auto ? !!m.auto(data, now) : !!(data.manual && data.manual[m.id]);
+  }
+  function msReady(m, data, now) {
+    return !msDone(m, data, now) && m.deps.every(dep => {
+      const p = MS.find(x => x.id === dep);
+      return p && msDone(p, data, now);
+    });
+  }
+  /* Earliest unblocked incomplete milestone (by plan order), plus how many
+     others are unblocked. */
+  function nextAction(data, now) {
+    const ready = MS.filter(m => msReady(m, data, now));
+    const allDone = MS.every(m => msDone(m, data, now));
+    return { next: ready.length ? ready[0] : null, othersReady: Math.max(0, ready.length - 1), allDone };
+  }
+
+  /* ---------------- misc ---------------- */
+
+  /* Monday-anchored ISO week key, built from LOCAL date parts.
+     (The prototype used toISOString() here, which rolls past-19:00 local
+     times in UTC-5 into the next UTC day — an evening review would land on
+     the wrong week key. Fixed by formatting the local date directly.) */
+  function weekKey(d) {
+    const t = new Date(d);
+    const day = (t.getDay() + 6) % 7;
+    t.setDate(t.getDate() - day);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}`;
+  }
+
+  function clockStats(now) {
+    const n = now ? new Date(now) : new Date();
+    // floor, not round: at noon on the baseline day, 0 days have elapsed.
+    const elapsed = Math.max(0, Math.floor((n - BASE) / 864e5));
+    const total = Math.round((END - BASE) / 864e5);
+    const left = Math.max(0, total - elapsed);
+    // Phase year anchored on actual anniversary dates, not a 365.25 divisor.
+    let year = 1;
+    for (let k = 1; k <= 4; k++) {
+      if (n >= new Date(BASE.getFullYear() + k, BASE.getMonth(), BASE.getDate())) year = k + 1;
+    }
+    return { elapsed, left, total, year, pct: Math.min(100, elapsed / total * 100) };
+  }
+
+  return {
+    SCHEMA, SCHEMA_VERSION, BASE, END, TOTAL_DAYS,
+    uuid, nowISO, blankData, normalizeData,
+    canonicalize, sortValue, sha256Hex, computeChecksum, counts, makeExport,
+    validateBackupShape, verifyExport,
+    contentId, contentKey,
+    mergeData, summarizeMergePlan, diffData,
+    ratePerHour, trailing12, totalHours, VERTICALS, ivBreakdown, decision,
+    MS, YEARS, msDone, msReady, nextAction,
+    weekKey, clockStats
+  };
+})();
+if (typeof module !== "undefined" && module.exports) module.exports = GC;
+/*==GC_CORE_END==*/
+</script>
+<script>
+"use strict";
+/* ================= configuration ================= */
+/* Paste your OAuth client ID from Google Cloud Console here (SETUP.md §3).
+   Leave empty to run with Drive sync disabled — the app works fully without it. */
+const GOOGLE_CLIENT_ID = "";
+
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+const DRIVE_FOLDER_NAME = "Goal Console";
+const DRIVE_FILE_NAME = "goal-console-backup.json";
+const SYNC_DEBOUNCE_MS = 5000;
+
+const DATA_KEY = "gc2_data";
+const LOCAL_KEY = "gc2_local";
+const UNDO_KEY = "gc2_undo";
+const LEGACY_KEY = "goal_console_v1";
+
+/* ================= state ================= */
+let S = loadData();
+let L = loadLocal();
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    if (raw) return GC.normalizeData(JSON.parse(raw), null);
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      const migrated = GC.normalizeData(JSON.parse(legacy), GC.nowISO());
+      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+  } catch (e) { console.error("loadData", e); }
+  return GC.blankData();
+}
+function loadLocal() {
+  try { return Object.assign({ deviceLabel: "", driveFileId: "", driveFolderId: "", lastSyncAt: "", lastSyncCounts: null, entriesSinceLastBackup: 0, hasConsented: false, undoAvailable: false }, JSON.parse(localStorage.getItem(LOCAL_KEY)) || {}); }
+  catch (e) { return { deviceLabel: "", driveFileId: "", driveFolderId: "", lastSyncAt: "", lastSyncCounts: null, entriesSinceLastBackup: 0, hasConsented: false, undoAvailable: false }; }
+}
+function saveData() {
+  try { localStorage.setItem(DATA_KEY, JSON.stringify(S)); }
+  catch (e) { alert("Could not save — browser storage may be full or blocked."); }
+}
+function saveLocal() {
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(L)); } catch (e) { /* non-fatal */ }
+}
+
+/* Every data mutation funnels through here: persist, count against the
+   backup nag, invalidate the import-undo snapshot, schedule a sync. */
+function markDirty(opts) {
+  opts = opts || {};
+  saveData();
+  L.entriesSinceLastBackup++;
+  if (!opts.fromImport) { L.undoAvailable = false; }
+  saveLocal();
+  scheduleSync();
+  renderAll();
+}
+
+/* ================= rendering ================= */
+const $ = (id) => document.getElementById(id);
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function money(n) { return "$" + Math.round(n).toLocaleString(); }
+
+function renderBar() {
+  const c = GC.clockStats();
+  $("gPhase").textContent = "Year " + c.year;
+  $("gElapsed").textContent = c.elapsed;
+  $("gLeft").textContent = c.left;
+  $("gRev").textContent = money(GC.trailing12(S.engagements));
+  $("gMs").textContent = GC.MS.filter(m => GC.msDone(m, S)).length + "/" + GC.MS.length;
+  $("tFill").style.width = c.pct + "%";
+  $("tPct").textContent = c.pct.toFixed(1) + "% of the clock";
+}
+
+function renderNext() {
+  const el = $("nextCard");
+  const { next, othersReady, allDone } = GC.nextAction(S);
+  if (!next) {
+    el.innerHTML = allDone
+      ? `<div class="eyebrow">Complete</div><h3>Every milestone is logged.</h3><p>Five years, closed out.</p>`
+      : `<div class="eyebrow">Nothing unblocked</div><h3>Everything left depends on something in flight.</h3><p>Finish an open item to release the next one.</p>`;
+    return;
+  }
+  el.innerHTML = `<div class="eyebrow">Do this next</div><h3>${esc(next.t)}</h3><p>${esc(next.m)}</p>
+    <div class="why">${othersReady > 0 ? othersReady + " other item" + (othersReady > 1 ? "s are" : " is") + " also unblocked — this one is first because it sits earliest in the plan." : "This is the only unblocked item on the board."}</div>`;
+}
+
+function renderInds() {
+  const ivs = S.interviews.length;
+  const spend = S.interviews.filter(i => i.spend === "paid" || i.spend === "tried").length;
+  const refs = S.interviews.filter(i => i.ref === "Yes").length;
+  const hrs = GC.totalHours(S.engagements);
+  const cr = S.pitchesMade ? Math.round(S.pitchesWon / S.pitchesMade * 100) + "%" : "—";
+  const cards = [
+    { v: ivs, sub: "/ 12", k: "Interviews logged", p: ivs / 12 },
+    { v: spend, k: "With prior spend or attempt", p: ivs ? spend / ivs : 0 },
+    { v: refs, k: "Referrals generated" },
+    { v: S.engagements.length, k: "Engagements closed" },
+    { v: hrs.toFixed(1), k: "Hours logged on real work" },
+    { v: cr, k: "Close rate (measured)" }
+  ];
+  $("inds").innerHTML = cards.map(c =>
+    `<div class="ind"><div class="v">${c.v}${c.sub ? `<small> ${c.sub}</small>` : ""}</div><div class="k">${c.k}</div>` +
+    (c.p !== undefined ? `<div class="bar2"><i style="width:${Math.min(100, c.p * 100)}%"></i></div>` : "") + `</div>`).join("");
+}
+
+function renderMs() {
+  let h = "";
+  [1, 2, 3, 4, 5].forEach(y => {
+    const items = GC.MS.filter(m => m.y === y);
+    const d = items.filter(m => GC.msDone(m, S)).length;
+    h += `<div class="yr"><div class="yr-h"><h3>${GC.YEARS[y][0]}</h3><span class="yr-sub">${GC.YEARS[y][1]}</span><span class="yr-ct">${d}/${items.length}</span></div>`;
+    items.forEach(m => {
+      const done = GC.msDone(m, S), rdy = GC.msReady(m, S);
+      const cls = done ? "done" : (rdy ? "ready" : "blocked");
+      let tag = done ? `<span class="ms-tag t-done">done</span>`
+        : rdy ? `<span class="ms-tag t-ready">ready</span>`
+          : `<span class="ms-tag t-blocked">blocked</span>`;
+      if (m.auto && !done) tag = `<span class="ms-tag t-auto">auto</span>` + tag;
+      let blockedBy = "";
+      if (!done && !rdy) {
+        const names = m.deps.filter(dep => { const p = GC.MS.find(x => x.id === dep); return p && !GC.msDone(p, S); }).map(dep => GC.MS.find(x => x.id === dep).t);
+        blockedBy = `<div class="ms-m" style="color:var(--faint)">Waiting on: ${names.map(esc).join(" · ")}</div>`;
+      }
+      h += `<div class="ms ${cls}">
+        <button class="ms-box ${m.auto ? "auto" : ""}" data-ms="${m.id}" ${m.auto ? 'disabled aria-disabled="true"' : ""} aria-label="${done ? "Mark incomplete" : "Mark complete"}: ${esc(m.t)}" title="${m.auto ? "Completes automatically from logged data" : "Tap to toggle"}"></button>
+        <div class="ms-main"><div class="ms-t">${esc(m.t)}</div><div class="ms-m">${esc(m.m)}</div>${blockedBy}</div>
+        ${tag}</div>`;
+    });
+    h += `</div>`;
+  });
+  $("msRoot").innerHTML = h;
+  document.querySelectorAll("[data-ms]").forEach(b => {
+    b.addEventListener("click", () => {
+      const id = b.getAttribute("data-ms"), m = GC.MS.find(x => x.id === id);
+      if (m.auto) return;
+      S.manual[id] = !S.manual[id];
+      if (!S.manual[id]) delete S.manual[id];
+      markDirty();
+    });
+  });
+}
+
+const SPENDLBL = { none: "Never tried", considered: "Considered", tried: "Tried unpaid", paid: "Paid money" };
+
+function renderIv() {
+  const s = S.interviews;
+  const bd = GC.ivBreakdown(s);
+  $("ivStats").innerHTML =
+    `${s.length} logged. By vertical — ` + GC.VERTICALS.map(x => `${x.split(" ")[0]}: <b>${bd.byVertical[x] || 0}</b>`).join(" · ") +
+    `. Target is 12 minimum, at least 3 per vertical.`;
+
+  const el = $("ivTable");
+  if (!s.length) { el.innerHTML = `<div class="empty">No interviews yet. The first one is unblocked today — it needs no entity, no pricing, and no research pass.</div>`; }
+  else {
+    el.innerHTML = `<div class="dt-wrap"><table class="dt"><thead><tr><th>Date</th><th>Business</th><th>Vertical</th><th>Pain point</th><th>Prior spend</th><th>Intensity</th><th></th></tr></thead><tbody>` +
+      s.map(i => `<tr><td class="num">${esc(i.date || "—")}</td><td>${esc(i.biz)}</td><td>${esc((i.vert || "").split(" / ")[0])}</td>
+      <td>${esc(i.pain || "")}${i.tags ? `<div style="color:var(--faint);font-size:12px;margin-top:3px">${esc(i.tags)}</div>` : ""}</td>
+      <td><span class="pill ${i.spend === "paid" || i.spend === "tried" ? "p-yes" : "p-no"}">${SPENDLBL[i.spend] || i.spend}</span>${i.spendD ? `<div style="font-size:12px;color:var(--muted);margin-top:3px">${esc(i.spendD)}</div>` : ""}</td>
+      <td>${esc(i.int)}</td><td><button class="btn ghost sm" data-ivdel="${i.id}">Delete</button></td></tr>`).join("") + `</tbody></table></div>`;
+    el.querySelectorAll("[data-ivdel]").forEach(b => b.addEventListener("click", () => {
+      if (confirm("Delete this interview? This is primary evidence.")) deleteRecord("interviews", b.getAttribute("data-ivdel"));
+    }));
+  }
+
+  const vd = $("ivVerdict");
+  const d = GC.decision(s);
+  if (d.status === "sample") {
+    vd.innerHTML = `<div class="verdict v-no"><b>Not enough sample</b>The decision rule needs 12 interviews minimum. Below that you have anecdotes — the same standard you applied to the market-size figures applies to your own sample. ${d.remaining} to go.</div>`;
+  } else if (d.status === "go") {
+    vd.innerHTML = `<div class="verdict v-go"><b>GO</b>${d.count} businesses independently describe “${esc(d.tag)}”, and ${d.withSpend} of them already spent time or money trying to solve it. That clears the bar.</div>`;
+  } else if (d.status === "weak") {
+    vd.innerHTML = `<div class="verdict v-weak"><b>Weak go</b>${d.count} businesses describe “${esc(d.tag)}” but only ${d.withSpend} show prior spend. Falsifier C is live. Worth one paid pilot to test real willingness to pay before building an offer around it.</div>`;
+  } else {
+    vd.innerHTML = `<div class="verdict v-no"><b>No go on current evidence</b>No pain point repeats across three or more businesses. Falsifier B — pain is idiosyncratic per business, which kills productization even if individual engagements are viable.</div>`;
+  }
+}
+
+function renderEn() {
+  const s = S.engagements;
+  const el = $("enTable"), cv = $("enCurve");
+  if (!s.length) {
+    cv.innerHTML = "";
+    el.innerHTML = `<div class="empty">No engagements yet. The first real hours-per-engagement measurement is the highest-value number this whole plan will ever produce.</div>`;
+  } else {
+    const rates = s.map(e => GC.ratePerHour(e) || 0);
+    const max = Math.max(...rates, 1);
+    cv.innerHTML = `<div class="curve">` + s.map((e, i) =>
+      `<div class="cbar"><span>$${Math.round(rates[i])}</span><i style="height:${Math.max(3, rates[i] / max * 80)}%"></i></div>`).join("") +
+      `</div><div class="clbl">` + s.map((e, i) => `<div>#${i + 1}</div>`).join("") + `</div>
+    <div class="note">Realized dollars per hour, in sequence. The shape is the learning curve; a single point is not.</div>`;
+    el.innerHTML = `<div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Client</th><th>Collected</th><th>Scope h</th><th>Build h</th><th>Support h</th><th>$/hr</th><th></th></tr></thead><tbody>` +
+      s.map((e, i) => `<tr><td class="num">${i + 1}</td><td>${esc(e.name)}<div style="font-size:12px;color:var(--faint)">${esc(e.date || "")}</div>
+      ${e.val ? `<div style="font-size:12px;color:var(--muted);margin-top:3px">“${esc(e.val)}”</div>` : ""}</td>
+      <td class="num">${money(+e.collected || 0)}</td><td class="num">${e.scope || 0}</td><td class="num">${e.build || 0}</td><td class="num">${e.sup || 0}</td>
+      <td class="num"><b>$${Math.round(rates[i])}</b></td>
+      <td><button class="btn ghost sm" data-endel="${e.id}">Delete</button></td></tr>`).join("") + `</tbody></table></div>`;
+    el.querySelectorAll("[data-endel]").forEach(b => b.addEventListener("click", () => {
+      if (confirm("Delete this engagement?")) deleteRecord("engagements", b.getAttribute("data-endel"));
+    }));
+  }
+  $("pitchOut").textContent =
+    S.pitchesMade ? `${S.pitchesWon} won / ${S.pitchesMade} made — ${Math.round(S.pitchesWon / S.pitchesMade * 100)}% (plan assumed 30%)` : "No pitches recorded yet.";
+}
+
+const WKITEMS = [
+  "Log anything that actually happened this week — interviews, hours, a quote received.",
+  "Check the Do-this-next card. Is it still the right next thing?",
+  "Name one commitment for next week, with a time and a place.",
+  "Flag any milestone that slipped. Record the miss; do not re-average the target down."
+];
+
+function renderWk() {
+  $("wkList").innerHTML = WKITEMS.map((x, i) =>
+    `<label class="chk"><input type="checkbox" data-wk="${i}" ${S.wkChecks[i] ? "checked" : ""}><span>${x}</span></label>`).join("");
+  document.querySelectorAll("[data-wk]").forEach(c => c.addEventListener("change", () => {
+    S.wkChecks[c.getAttribute("data-wk")] = c.checked;
+    if (!c.checked) delete S.wkChecks[c.getAttribute("data-wk")];
+    saveData(); scheduleSync();
+  }));
+  const tw = GC.weekKey(new Date());
+  $("wkStatus").textContent = S.weeks.includes(tw) ? "This week is logged." : "Not yet logged this week.";
+  let h = "";
+  for (let i = 15; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i * 7);
+    const k = GC.weekKey(d);
+    h += `<div class="wk ${S.weeks.includes(k) ? "hit" : ""}" title="${k}">${i === 0 ? "now" : ""}</div>`;
+  }
+  $("wkStreak").innerHTML = h;
+  if (document.activeElement !== $("wkCommit")) $("wkCommit").value = S.commit || "";
+}
+
+function renderNag() {
+  const n = L.entriesSinceLastBackup;
+  const el = $("nag");
+  if (n > 0) {
+    el.classList.add("on");
+    el.classList.toggle("loud", n > 5);
+    $("nagTxt").textContent = n + (n === 1 ? " entry" : " entries") + " logged since your last backup.";
+  } else {
+    el.classList.remove("on", "loud");
+  }
+}
+
+function renderAll() { renderBar(); renderNext(); renderInds(); renderMs(); renderIv(); renderEn(); renderWk(); renderNag(); renderData(); }
+
+/* ================= mutations ================= */
+
+function deleteRecord(kind, id) {
+  const ix = S[kind].findIndex(r => r.id === id);
+  if (ix < 0) return;
+  S[kind].splice(ix, 1);
+  S.deletedIds.push({ id, deletedAt: GC.nowISO() });
+  markDirty();
+}
+
+$("iAdd").addEventListener("click", () => {
+  const biz = $("iBiz").value.trim();
+  if (!biz) { alert("Add the business name so the entry is traceable later."); return; }
+  const t = GC.nowISO();
+  S.interviews.push({
+    id: GC.uuid(), createdAt: t, updatedAt: t,
+    date: $("iDate").value, biz,
+    vert: $("iVert").value,
+    emp: $("iEmp").value,
+    pain: $("iPain").value.trim(),
+    spend: $("iSpend").value,
+    spendD: $("iSpendD").value.trim(),
+    int: $("iInt").value,
+    pay: $("iPay").value,
+    ref: $("iRef").value,
+    tags: $("iTags").value.trim()
+  });
+  ["iBiz", "iEmp", "iPain", "iSpendD", "iTags"].forEach(id => $(id).value = "");
+  markDirty();
+});
+
+$("eAdd").addEventListener("click", () => {
+  const name = $("eName").value.trim();
+  if (!name) { alert("Name the engagement so the curve reads in sequence."); return; }
+  const t = GC.nowISO();
+  S.engagements.push({
+    id: GC.uuid(), createdAt: t, updatedAt: t,
+    name, date: $("eDate").value,
+    invoiced: $("eInv").value,
+    collected: $("eCol").value,
+    scope: $("eScope").value,
+    build: $("eBuild").value,
+    sup: $("eSup").value,
+    val: $("eVal").value.trim()
+  });
+  ["eName", "eInv", "eCol", "eScope", "eBuild", "eSup", "eVal"].forEach(id => $(id).value = "");
+  markDirty();
+});
+
+$("pMade").addEventListener("click", () => { S.pitchesMade++; markDirty(); });
+$("pWon").addEventListener("click", () => { S.pitchesWon++; S.pitchesMade = Math.max(S.pitchesMade, S.pitchesWon); markDirty(); });
+$("pUndo").addEventListener("click", () => { S.pitchesMade = Math.max(0, S.pitchesMade - 1); S.pitchesWon = Math.min(S.pitchesWon, S.pitchesMade); markDirty(); });
+
+$("wkDone").addEventListener("click", () => {
+  const k = GC.weekKey(new Date());
+  if (!S.weeks.includes(k)) S.weeks.push(k);
+  S.weeks.sort();
+  S.wkChecks = {};
+  markDirty();
+});
+$("wkSaveCommit").addEventListener("click", () => {
+  S.commit = $("wkCommit").value;
+  S.commitUpdatedAt = GC.nowISO();
+  markDirty();
+  $("wkCommitSaved").textContent = "Saved.";
+  setTimeout(() => $("wkCommitSaved").textContent = "", 2000);
+});
+
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("on"));
+  document.querySelectorAll(".panel").forEach(x => x.classList.remove("on"));
+  t.classList.add("on"); $("p-" + t.getAttribute("data-p")).classList.add("on");
+}));
+
+/* ================= backup build / share / download ================= */
+
+async function buildBackupFile() {
+  const exp = await GC.makeExport(S, L.deviceLabel || defaultDeviceLabel());
+  return { exp, json: JSON.stringify(exp, null, 2), name: "goal-console-backup-" + new Date().toISOString().slice(0, 10) + ".json" };
+}
+function defaultDeviceLabel() {
+  return /Android/i.test(navigator.userAgent) ? "android-chrome" : "desktop-browser";
+}
+
+function backupCompleted() {
+  L.entriesSinceLastBackup = 0;
+  saveLocal();
+  renderNag(); renderData();
+}
+
+$("dzExport").addEventListener("click", async () => {
+  const { json, name } = await buildBackupFile();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  $("dzShareMsg").textContent = "Backup downloaded.";
+  backupCompleted();
+});
+
+async function shareBackup() {
+  const { json, name } = await buildBackupFile();
+  const file = new File([json], name, { type: "application/json" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "Goal Console backup" });
+      $("dzShareMsg").textContent = "Shared. If you sent it to OneDrive, the copy there is now current.";
+      backupCompleted();
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") { $("dzShareMsg").textContent = "Share cancelled — no backup was made."; return; }
+      // fall through to download on real failures
+    }
+  }
+  // fallback: plain download
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  $("dzShareMsg").textContent = "File sharing isn't supported here — downloaded the backup instead.";
+  backupCompleted();
+}
+$("dzShare").addEventListener("click", shareBackup);
+$("nagBackup").addEventListener("click", () => { document.querySelector('[data-p="dz"]').click(); shareBackup(); });
+
+/* ================= import ================= */
+
+let pendingImport = null;
+
+$("dzImportBtn").addEventListener("click", () => $("dzImport").click());
+$("dzImport").addEventListener("change", async (ev) => {
+  const f = ev.target.files[0];
+  ev.target.value = "";
+  if (!f) return;
+  const msg = $("dzImportMsg");
+  msg.textContent = "";
+  let obj;
+  try { obj = JSON.parse(await f.text()); }
+  catch (e) { msg.textContent = "Import refused: that file is not valid JSON. Nothing was changed."; return; }
+
+  const shape = GC.validateBackupShape(obj);
+  if (!shape.ok) { msg.textContent = "Import refused: " + shape.errors.join(" ") + " Nothing was changed."; return; }
+
+  if (!shape.legacy) {
+    let v;
+    try { v = await GC.verifyExport(obj); }
+    catch (e) { msg.textContent = "Import refused: could not compute checksum (" + e.message + "). Nothing was changed."; return; }
+    if (!v.checksumOk) { msg.textContent = "Import refused: checksum mismatch — the file's contents do not match its recorded SHA-256. It has been altered or corrupted. Nothing was changed."; return; }
+    if (!v.countsOk) { msg.textContent = "Import refused: record counts disagree with the file header (" + v.countsDetail + "). Nothing was changed."; return; }
+  }
+
+  const { merged, summary } = GC.mergeData(S, shape.data);
+  pendingImport = { merged, summary };
+  $("impSummary").textContent = GC.summarizeMergePlan(summary);
+  $("impDetail").textContent =
+    (shape.legacy ? "Legacy prototype backup (no checksum) — records were assigned stable IDs derived from their content. " : "Checksum verified. ") +
+    "Nothing is written until you confirm.";
+  $("impConfirm").disabled = !summary.changed;
+  $("impConfirm").textContent = summary.changed ? "Apply merge" : "Nothing to apply";
+  $("impOverlay").classList.add("on");
+});
+
+$("impCancel").addEventListener("click", () => { pendingImport = null; $("impOverlay").classList.remove("on"); $("dzImportMsg").textContent = "Import cancelled. Nothing was changed."; });
+
+$("impConfirm").addEventListener("click", () => {
+  if (!pendingImport) return;
+  try { localStorage.setItem(UNDO_KEY, JSON.stringify(S)); L.undoAvailable = true; }
+  catch (e) { L.undoAvailable = false; }
+  const s = pendingImport.summary;
+  S = pendingImport.merged;
+  pendingImport = null;
+  $("impOverlay").classList.remove("on");
+  saveData(); saveLocal();
+  scheduleSync();
+  renderAll();
+  $("dzImportMsg").textContent = "Merge applied. " + GC.summarizeMergePlan(s).replace(/^Will /, "Did ");
+});
+
+$("dzUndoImport").addEventListener("click", () => {
+  try {
+    const snap = localStorage.getItem(UNDO_KEY);
+    if (!snap) { $("dzImportMsg").textContent = "No import snapshot available."; return; }
+    S = GC.normalizeData(JSON.parse(snap), null);
+    L.undoAvailable = false;
+    saveData(); saveLocal(); scheduleSync(); renderAll();
+    $("dzImportMsg").textContent = "Import undone — state restored to the pre-import snapshot.";
+  } catch (e) { $("dzImportMsg").textContent = "Undo failed: " + e.message; }
+});
+
+/* ================= Google Drive sync ================= */
+
+const httpsish = location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const syncConfigured = !!GOOGLE_CLIENT_ID && httpsish;
+
+const sync = {
+  status: syncConfigured ? (function () { return "signed-out"; })() : "disabled",
+  error: "",            // human-readable last error
+  dirty: false,         // mutations awaiting a successful push
+  inFlight: false,
+  token: null,
+  tokenExpiry: 0,
+  timer: null,
+  gisReady: false,
+  tokenClient: null
+};
+
+function scheduleSync() {
+  if (!syncConfigured) return;
+  sync.dirty = true;
+  renderSyncUI();
+  clearTimeout(sync.timer);
+  sync.timer = setTimeout(() => { doSync("debounce"); }, SYNC_DEBOUNCE_MS);
+}
+
+function loadGis() {
+  return new Promise((resolve, reject) => {
+    if (sync.gisReady) return resolve();
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client";
+    s.onload = () => { sync.gisReady = true; resolve(); };
+    s.onerror = () => reject(new Error("Could not load Google's sign-in library (offline?)."));
+    document.head.appendChild(s);
+  });
+}
+
+function getToken(interactive) {
+  return new Promise(async (resolve, reject) => {
+    if (sync.token && Date.now() < sync.tokenExpiry - 60000) return resolve(sync.token);
+    try { await loadGis(); } catch (e) { return reject(e); }
+    if (!sync.tokenClient) {
+      sync.tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: DRIVE_SCOPE,
+        callback: () => {} // replaced per request below
+      });
+    }
+    sync.tokenClient.callback = (resp) => {
+      if (resp.error) return reject(new Error("Authorization failed: " + resp.error));
+      sync.token = resp.access_token;
+      sync.tokenExpiry = Date.now() + (parseInt(resp.expires_in, 10) || 3600) * 1000;
+      L.hasConsented = true; saveLocal();
+      resolve(sync.token);
+    };
+    sync.tokenClient.error_callback = (err) => {
+      reject(new Error("Authorization " + (err && err.type === "popup_closed" ? "cancelled" : "failed") + "."));
+    };
+    // Silent attempt when we've consented before; interactive otherwise.
+    sync.tokenClient.requestAccessToken({ prompt: (interactive || !L.hasConsented) ? "consent" : "" });
+  });
+}
+
+async function driveFetch(url, opts, token) {
+  const r = await fetch(url, Object.assign({}, opts, {
+    headers: Object.assign({ Authorization: "Bearer " + token }, (opts && opts.headers) || {})
+  }));
+  if (r.status === 401) { sync.token = null; const e = new Error("AUTH"); e.auth = true; throw e; }
+  return r;
+}
+
+async function ensureFolder(token) {
+  if (L.driveFolderId) {
+    const r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + L.driveFolderId + "?fields=id,trashed", {}, token);
+    if (r.ok) { const j = await r.json(); if (!j.trashed) return L.driveFolderId; }
+    L.driveFolderId = ""; saveLocal();
+  }
+  const q = encodeURIComponent(`name='${DRIVE_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const sr = await driveFetch("https://www.googleapis.com/drive/v3/files?q=" + q + "&fields=files(id)", {}, token);
+  if (sr.ok) { const j = await sr.json(); if (j.files && j.files.length) { L.driveFolderId = j.files[0].id; saveLocal(); return L.driveFolderId; } }
+  const cr = await driveFetch("https://www.googleapis.com/drive/v3/files", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: DRIVE_FOLDER_NAME, mimeType: "application/vnd.google-apps.folder" })
+  }, token);
+  if (!cr.ok) throw new Error("Could not create the Drive folder (" + cr.status + ").");
+  const j = await cr.json();
+  L.driveFolderId = j.id; saveLocal();
+  return j.id;
+}
+
+function multipartBody(metadata, content) {
+  const boundary = "gcb-" + Math.random().toString(36).slice(2);
+  const body =
+    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
+    JSON.stringify(metadata) +
+    `\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n` +
+    content +
+    `\r\n--${boundary}--`;
+  return { body, type: `multipart/related; boundary=${boundary}` };
+}
+
+async function uploadBackup(token, json) {
+  // Update the existing file if we have its id; otherwise create it once.
+  if (L.driveFileId) {
+    const { body, type } = multipartBody({ name: DRIVE_FILE_NAME }, json);
+    const r = await driveFetch("https://www.googleapis.com/upload/drive/v3/files/" + L.driveFileId + "?uploadType=multipart&fields=id", {
+      method: "PATCH", headers: { "Content-Type": type }, body
+    }, token);
+    if (r.ok) return L.driveFileId;
+    if (r.status !== 404) throw new Error("Drive upload failed (" + r.status + ").");
+    L.driveFileId = ""; saveLocal(); // deleted remotely — recreate below
+  }
+  const folderId = await ensureFolder(token);
+  const { body, type } = multipartBody({ name: DRIVE_FILE_NAME, parents: [folderId] }, json);
+  const r = await driveFetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
+    method: "POST", headers: { "Content-Type": type }, body
+  }, token);
+  if (!r.ok) throw new Error("Drive upload failed (" + r.status + ").");
+  const j = await r.json();
+  L.driveFileId = j.id; saveLocal();
+  return j.id;
+}
+
+async function doSync(reason, interactive) {
+  if (!syncConfigured || sync.inFlight) return;
+  sync.inFlight = true;
+  sync.status = "syncing";
+  renderSyncUI();
+  try {
+    const token = await getToken(!!interactive);
+    const { exp, json } = await buildBackupFile();
+    await uploadBackup(token, json);
+    sync.dirty = false;
+    sync.status = "ok";
+    sync.error = "";
+    L.lastSyncAt = GC.nowISO();
+    L.lastSyncCounts = exp.counts;
+    L.entriesSinceLastBackup = 0;
+    saveLocal();
+  } catch (e) {
+    if (e.auth) { sync.status = "auth"; sync.error = "Google authorization expired — tap Re-authorize. Your data is safe locally and will sync after."; }
+    else if (!L.hasConsented && !interactive) { sync.status = "signed-out"; sync.error = ""; }
+    else { sync.status = "error"; sync.error = e.message || String(e); }
+  } finally {
+    sync.inFlight = false;
+    renderSyncUI(); renderNag(); renderData();
+  }
+}
+
+async function verifyDriveBackup() {
+  const out = $("dzVerifyOut");
+  out.innerHTML = `<div class="note">Checking the Drive copy…</div>`;
+  try {
+    const token = await getToken(false);
+    if (!L.driveFileId) { out.innerHTML = `<div class="sync-off">No Drive file recorded yet — sync at least once first.</div>`; return; }
+    const r = await driveFetch("https://www.googleapis.com/drive/v3/files/" + L.driveFileId + "?alt=media", {}, token);
+    if (!r.ok) { out.innerHTML = `<div class="sync-err">Could not download the Drive file (${r.status}).</div>`; return; }
+    const obj = JSON.parse(await r.text());
+    const shape = GC.validateBackupShape(obj);
+    if (!shape.ok) { out.innerHTML = `<div class="sync-err">Drive file is not a valid backup: ${esc(shape.errors.join(" "))}</div>`; return; }
+    const v = await GC.verifyExport(obj);
+    if (!v.checksumOk) { out.innerHTML = `<div class="sync-err">Drive copy FAILED its checksum — the stored file is corrupt. Do a manual backup now, then sync to overwrite it.</div>`; return; }
+    const diff = GC.diffData(GC.normalizeData(S, null), shape.data, "local", "Drive");
+    if (!diff.length) {
+      const c = GC.counts(S);
+      out.innerHTML = `<div class="sync-ok">Drive copy matches local state (${c.interviews} interview${c.interviews === 1 ? "" : "s"}, ${c.engagements} engagement${c.engagements === 1 ? "" : "s"}). Checksum verified.</div>`;
+    } else {
+      out.innerHTML = `<div class="sync-err">Drive copy differs from local state:</div><pre class="diff">${esc(diff.join("\n"))}</pre><div class="note">If you just logged something, this is the debounce window — try Sync now, then Verify again.</div>`;
+    }
+  } catch (e) {
+    if (e.auth) out.innerHTML = `<div class="sync-err">Authorization expired — tap Re-authorize, then Verify again.</div>`;
+    else out.innerHTML = `<div class="sync-err">Verify failed: ${esc(e.message || String(e))}</div>`;
+  }
+}
+
+$("dzAuth").addEventListener("click", () => doSync("connect", true));
+$("dzReauth").addEventListener("click", () => doSync("reauth", true));
+$("dzSyncNow").addEventListener("click", () => doSync("manual"));
+$("dzVerify").addEventListener("click", verifyDriveBackup);
+$("dzDisconnect").addEventListener("click", () => {
+  if (sync.token && sync.gisReady && typeof google !== "undefined") {
+    try { google.accounts.oauth2.revoke(sync.token, () => {}); } catch (e) {}
+  }
+  sync.token = null; sync.status = "signed-out";
+  L.hasConsented = false; L.driveFileId = ""; L.driveFolderId = ""; L.lastSyncAt = ""; L.lastSyncCounts = null;
+  saveLocal(); renderSyncUI(); renderData();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden" && sync.dirty && syncConfigured && L.hasConsented) {
+    clearTimeout(sync.timer);
+    doSync("hidden");
+  }
+});
+
+function renderSyncUI() {
+  const dot = $("syncDot"), lbl = $("syncDotLbl");
+  dot.className = "syncdot";
+  let text = "local only";
+  if (sync.status === "disabled") { text = "local only"; }
+  else if (sync.status === "signed-out") { text = "drive: off"; }
+  else if (sync.status === "syncing") { dot.classList.add("s-pend"); text = "syncing…"; }
+  else if (sync.status === "ok" && !sync.dirty) { dot.classList.add("s-ok"); text = "backed up"; }
+  else if (sync.status === "ok" && sync.dirty) { dot.classList.add("s-pend"); text = "sync pending"; }
+  else if (sync.status === "auth") { dot.classList.add("s-err"); text = "re-auth needed"; }
+  else if (sync.status === "error") { dot.classList.add("s-err"); text = "sync failed"; }
+  else if (sync.dirty) { dot.classList.add("s-pend"); text = "sync pending"; }
+  lbl.textContent = text;
+}
+
+/* ================= data tab ================= */
+
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  renderData();
+});
+$("dzInstall").addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  renderData();
+});
+
+let persistState = "unknown";
+async function initPersist() {
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      const already = await navigator.storage.persisted();
+      persistState = (already || await navigator.storage.persist()) ? "persisted" : "not persisted";
+    } else persistState = "unavailable";
+  } catch (e) { persistState = "unavailable"; }
+  renderData();
+}
+
+function renderData() {
+  // sync box
+  const box = $("dzSyncBox");
+  if (!GOOGLE_CLIENT_ID) {
+    box.innerHTML = `<div class="sync-off">Drive sync is not configured — no OAuth client ID is set in this build. The app is fully functional; backups are manual. See SETUP.md §3 to enable automatic sync.</div>`;
+  } else if (!httpsish) {
+    box.innerHTML = `<div class="sync-off">Drive sync is disabled because this page wasn't loaded over HTTPS (it's running from ${esc(location.protocol)}). Everything else works. Open the hosted URL to sync.</div>`;
+  } else if (sync.status === "signed-out") {
+    box.innerHTML = `<div class="sync-off">Not connected to Google Drive yet. One tap connects it; after that, every change auto-backs-up about ${SYNC_DEBOUNCE_MS / 1000} seconds after you log it.</div>`;
+  } else if (sync.status === "auth") {
+    box.innerHTML = `<div class="sync-err">${esc(sync.error)}</div>`;
+  } else if (sync.status === "error") {
+    box.innerHTML = `<div class="sync-err">Sync is failing: ${esc(sync.error)} Your data is safe on this device; fix the connection and tap Sync now. If this persists, do a manual backup.</div>`;
+  } else if (sync.dirty) {
+    box.innerHTML = `<div class="sync-off">Changes waiting to sync…</div>`;
+  } else if (L.lastSyncAt) {
+    box.innerHTML = `<div class="sync-ok">Auto-sync is on. Drive copy is current.</div>`;
+  } else {
+    box.innerHTML = `<div class="sync-off">Connected. No sync has completed yet.</div>`;
+  }
+
+  const kv = $("dzSyncKv");
+  const c = L.lastSyncCounts;
+  kv.innerHTML = (syncConfigured ? `
+    <dt>Last synced</dt><dd>${L.lastSyncAt ? esc(new Date(L.lastSyncAt).toLocaleString()) : "never"}</dd>
+    <dt>In that sync</dt><dd>${c ? `${c.interviews} interviews · ${c.engagements} engagements · ${c.deletedIds} tombstones` : "—"}</dd>
+    <dt>Drive file</dt><dd>${L.driveFileId ? esc(DRIVE_FOLDER_NAME + "/" + DRIVE_FILE_NAME) : "not created yet"}</dd>` : "");
+
+  $("dzAuth").style.display = (syncConfigured && sync.status === "signed-out") ? "" : "none";
+  $("dzReauth").style.display = (sync.status === "auth") ? "" : "none";
+  $("dzSyncNow").style.display = (syncConfigured && sync.status !== "signed-out") ? "" : "none";
+  $("dzVerify").style.display = (syncConfigured && L.driveFileId) ? "" : "none";
+  $("dzDisconnect").style.display = (syncConfigured && L.hasConsented) ? "" : "none";
+
+  // app & storage
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  $("dzAppKv").innerHTML = `
+    <dt>Storage</dt><dd>${persistState === "persisted" ? "persisted — the browser won't evict this app's data under storage pressure" : persistState === "not persisted" ? "not persisted — the browser may evict data if the device runs low on space; installing the app usually fixes this" : "persistence API unavailable in this context"}</dd>
+    <dt>Running as</dt><dd>${standalone ? "installed app" : "browser tab"}</dd>
+    <dt>Offline shell</dt><dd id="dzSwState">checking…</dd>
+    <dt>Entries since backup</dt><dd>${L.entriesSinceLastBackup}</dd>`;
+  $("dzInstall").style.display = deferredPrompt ? "" : "none";
+  $("dzUndoImport").style.display = L.undoAvailable ? "" : "none";
+  if (document.activeElement !== $("dzDevice")) $("dzDevice").value = L.deviceLabel || "";
+  updateSwState();
+}
+
+function updateSwState() {
+  const el = document.getElementById("dzSwState");
+  if (!el) return;
+  if (!("serviceWorker" in navigator)) { el.textContent = "service workers unsupported"; return; }
+  if (!httpsish) { el.textContent = "unavailable from " + location.protocol + " — works when hosted"; return; }
+  navigator.serviceWorker.getRegistration().then(r => {
+    el.textContent = r ? "cached — the app opens with no network" : "not yet cached";
+  }).catch(() => { el.textContent = "unknown"; });
+}
+
+$("dzDevice").addEventListener("change", () => { L.deviceLabel = $("dzDevice").value.trim(); saveLocal(); });
+
+$("dzReset").addEventListener("click", () => {
+  if (!confirm("Erase every interview, engagement, and milestone on this device? Export a backup first if you have real data.")) return;
+  if (!confirm("Second check: this erases LOCAL data only and cannot be undone from this device. Continue?")) return;
+  S = GC.blankData();
+  L.entriesSinceLastBackup = 0; L.undoAvailable = false;
+  try { localStorage.removeItem(UNDO_KEY); } catch (e) {}
+  saveData(); saveLocal(); renderAll();
+  $("dzMsg").textContent = "Everything erased on this device. The Drive copy (if any) was not touched and will be overwritten on the next sync.";
+});
+
+/* ================= boot ================= */
+
+if ("serviceWorker" in navigator && httpsish) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").then(updateSwState).catch(() => {});
+  });
+}
+
+const todayLocal = (() => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; })();
+$("iDate").value = todayLocal;
+$("eDate").value = todayLocal; // an undated engagement is excluded from trailing-12 revenue, so default to today
+
+renderSyncUI();
+renderAll();
+initPersist();
+// Attempt a silent reconnect if the user has synced before.
+if (syncConfigured && L.hasConsented) { doSync("boot"); }
+</script>
+</body>
+</html>
